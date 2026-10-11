@@ -1,0 +1,177 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El amor de mi vida ❤️</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            overflow: hidden;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .mensaje {
+            position: absolute;
+            top: 78%;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: #ff416c;
+            font-size: clamp(22px, 5vw, 38px);
+            letter-spacing: 3px;
+            text-shadow:
+                0 0 8px #ff1744,
+                0 0 20px #ff1744,
+                0 0 40px #ff1744;
+            animation: brillo 2s infinite alternate;
+            pointer-events: none;
+        }
+
+        @keyframes brillo {
+            from {
+                opacity: 0.65;
+                transform: scale(1);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1.04);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="corazon"></canvas>
+
+    <div class="mensaje">el amor de mi vida ❤️</div>
+
+    <script>
+        const canvas = document.getElementById("corazon");
+        const ctx = canvas.getContext("2d");
+
+        let ancho, alto;
+        let particulas = [];
+        let tiempo = 0;
+
+        function ajustarPantalla() {
+            ancho = canvas.width = window.innerWidth;
+            alto = canvas.height = window.innerHeight;
+
+            crearParticulas();
+        }
+
+        // Fórmula matemática para dibujar un corazón
+        function formaCorazon(t) {
+            const x = 16 * Math.pow(Math.sin(t), 3);
+
+            const y = -(13 * Math.cos(t)
+                - 5 * Math.cos(2 * t)
+                - 2 * Math.cos(3 * t)
+                - Math.cos(4 * t));
+
+            return { x, y };
+        }
+
+        function crearParticulas() {
+            particulas = [];
+
+            const escala = Math.min(ancho, alto) * 0.018;
+            const cantidad = Math.min(
+                1200,
+                Math.max(450, Math.floor(ancho * alto / 900))
+            );
+
+            for (let i = 0; i < cantidad; i++) {
+                const t = Math.random() * Math.PI * 2;
+                const punto = formaCorazon(t);
+
+                // Distribuir puntos dentro del corazón
+                const relleno = Math.sqrt(Math.random());
+
+                particulas.push({
+                    x: ancho / 2 + punto.x * escala * relleno,
+                    y: alto * 0.43 + punto.y * escala * relleno,
+                    baseX: ancho / 2 + punto.x * escala * relleno,
+                    baseY: alto * 0.43 + punto.y * escala * relleno,
+                    tamano: Math.random() * 2 + 0.5,
+                    brillo: Math.random(),
+                    velocidad: Math.random() * 0.04 + 0.01,
+                    fase: Math.random() * Math.PI * 2
+                });
+            }
+        }
+
+        function dibujar() {
+            ctx.clearRect(0, 0, ancho, alto);
+            tiempo += 0.025;
+
+            const latido = 1 + Math.sin(tiempo * 2) * 0.045;
+
+            particulas.forEach(p => {
+                const movimientoX = Math.sin(tiempo + p.fase) * 2;
+                const movimientoY = Math.cos(tiempo + p.fase) * 2;
+
+                const x = ancho / 2
+                    + (p.baseX - ancho / 2) * latido
+                    + movimientoX;
+
+                const y = alto * 0.43
+                    + (p.baseY - alto * 0.43) * latido
+                    + movimientoY;
+
+                p.brillo += p.velocidad;
+
+                const opacidad = 0.45
+                    + (Math.sin(p.brillo) + 1) * 0.275;
+
+                // Resplandor rojo
+                ctx.beginPath();
+                ctx.arc(x, y, p.tamano * 3, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 0, 45, ${opacidad * 0.15})`;
+                ctx.fill();
+
+                // Partícula brillante
+                ctx.beginPath();
+                ctx.arc(x, y, p.tamano, 0, Math.PI * 2);
+
+                ctx.fillStyle = `rgba(255, ${
+                    Math.floor(Math.random() * 45)
+                }, ${Math.floor(Math.random() * 70)}, ${opacidad})`;
+
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = "#ff003c";
+                ctx.fill();
+            });
+
+            ctx.shadowBlur = 0;
+
+            requestAnimationFrame(dibujar);
+        }
+
+        window.addEventListener("resize", ajustarPantalla);
+
+        ajustarPantalla();
+        dibujar();
+    </script>
+
+</body>
+</html>
